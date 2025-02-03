@@ -27,6 +27,21 @@ This document contains topics I have encountered during my M.Sc. and Ph.D. studi
 \subsection{Probability Distributions}
 \begin{itemize}
 \item \textbf{Beta: }
+\begin{itemize}
+      \item The Beta distribution, \( \text{Beta}(\alpha, \beta) \), is a continuous probability distribution on \( x \in (0,1) \) parameterized by shape parameters \( \alpha, \beta > 0 \). Its probability density function (PDF) is:
+
+  \[
+  f(x; \alpha, \beta) = \frac{x^{\alpha-1} (1-x)^{\beta-1}}{B(\alpha, \beta)}
+  \]
+
+  where \( B(\alpha, \beta) = \int_0^1 t^{\alpha-1} (1-t)^{\beta-1} dt \) is the Beta function.
+
+\item It is a conjugate prior for the Bernoulli, Binomial, and related distributions in Bayesian statistics, with the expected value:
+
+  \[
+  \mathbb{E}[X] = \frac{\alpha}{\alpha + \beta}
+  \]
+\end{itemize}
 \item \textbf{Bernoulli: } Takes the value 1 with probability 
 ${\displaystyle p}$ and the value 0 with probability 
 ${\displaystyle q=1-p}$
@@ -50,6 +65,26 @@ ${\displaystyle q=1-p}$
         \item PDF:
         \[ f(x | \alpha, \beta) = \frac{\beta^\alpha x^{\alpha-1} e^{-\beta x}}{\Gamma(\alpha)}, \]
         where $\alpha$ is the shape parameter and $\beta$ is the rate parameter.
+    \end{itemize}
+    \item \textbf{Beta Distribution:}
+    \begin{itemize}
+    \item \textbf{Probability Distribution over a Unit Interval} – The Beta distribution is a continuous probability distribution defined on the interval \( [0,1] \), making it useful for modeling probabilities and proportions.
+    
+    \item \textbf{Parameterized by Two Shape Parameters} – It is controlled by two positive parameters \( \alpha \) and \( \beta \), which determine the shape of the distribution:
+    \[
+    P(x | \alpha, \beta) = \frac{x^{\alpha-1} (1 - x)^{\beta-1}}{B(\alpha, \beta)},
+    \]
+    where \( B(\alpha, \beta) \) is the Beta function, ensuring normalization.
+    
+    \item \textbf{Used in Bayesian Inference} – The Beta distribution is commonly used as a conjugate prior for the Bernoulli and Binomial distributions, allowing easy posterior updates in Bayesian statistics.
+\end{itemize}
+    \item \textbf{Dirichlet Distribution:}
+    \begin{itemize}
+     \item \textbf{Distribution over Probability Vectors} – The Dirichlet distribution is a multivariate generalization of the Beta distribution and defines a probability distribution over a simplex, meaning it generates valid probability vectors where elements sum to 1.
+    
+    \item \textbf{Parameterized by Concentration Parameters} – It is defined by a vector of positive concentration parameters \( \boldsymbol{\alpha} = (\alpha_1, \alpha_2, \dots, \alpha_K) \), which control the distribution of probabilities among \( K \) categories.
+    
+    \item \textbf{Common in Bayesian Statistics and Topic Modeling} – The Dirichlet distribution is widely used as a prior in Bayesian models (e.g., Latent Dirichlet Allocation for topic modeling), where it acts as a prior for categorical distributions like the multinomial.
     \end{itemize}
     \item \textbf{Multivariate Normal Distribution:}
     \begin{itemize}
@@ -80,6 +115,17 @@ ${\displaystyle q=1-p}$
     \caption{Common Conjugate Priors}
     \label{tab:my_label}
 \end{table}
+\subsection{Expectation Maximization (EM)}
+\begin{itemize}
+    \item Useful for problems with latent unobserves variables (e.g. cluster assignments)
+    \item Iterative method to find the Maximum Likelihood Estimates (MLE) of parameters in probabilistic models with latent variables.
+    \item \textbf{E-Step:} Compute the expected value of the log-likelihood with respect to the conditional distribution of the latent variables:
+    \[ Q(\theta | \theta^{(t)}) = \mathbb{E}_{z \sim p(z|x, \theta^{(t)})}[\log p(x, z | \theta)]. \]
+    \item \textbf{M-Step:} Maximize $Q(\theta | \theta^{(t)})$ with respect to $\theta$ to update the parameters:
+    \[ \theta^{(t+1)} = \arg\max_{\theta} Q(\theta | \theta^{(t)}). \]
+    \item The weights in M step come from the probabilities computed in the E-Step.
+\end{itemize}
+
 \subsection{Maximum Likelihood Estimation (MLE)}
 \begin{itemize}
     \item Determines parameters $\theta$ that maximize the likelihood of observing given data:
@@ -105,46 +151,77 @@ ${\displaystyle q=1-p}$
     \[
     \hat{\theta} = \arg \max_\theta \ell(\theta)
     \]
+    \item If the likelihood function has a closed-form solution, we can solve for 
+$\theta$ directly (e.g., in Gaussian distributions, MLE has an analytical solution).
 
+However, in most complex models (e.g., neural networks, deep learning, logistic regression, latent variable models like GMMs), there is no closed-form solution.
     \item \textbf{Interpretation:} The resulting \( \hat{\theta} \) are the parameters that make the observed data most likely under the model, assuming the data comes from the distribution specified by \( p(x \mid \theta) \).
 \end{itemize}
 
 
 \subsection{Bayesian Inference and Maximum A Posteriori (MAP)}
 \begin{itemize}
-    \item MAP estimation incorporates a prior distribution $P(\theta)$:
-    \[ \hat{\theta}_{MAP} = \arg\max_{\theta} P(\theta | D) = \arg\max_{\theta} P(D | \theta) P(\theta). \]
     \item Balances likelihood and prior knowledge.
+       \item \textbf{Bayesian Extension of MLE} – Unlike Maximum Likelihood Estimation (MLE), MAP incorporates a prior belief about parameters using Bayes’ theorem.
+    
+    \item \textbf{Objective Function} – MAP maximizes the posterior probability:
+    \[
+    \theta_{\text{MAP}} = \arg\max_{\theta} P(\theta | D) = \arg\max_{\theta} P(D | \theta) P(\theta),
+    \]
+    where \( P(D | \theta) \) is the likelihood and \( P(\theta) \) is the prior.
+    
+    \item \textbf{Regularization Connection} – In many cases, MAP estimation corresponds to adding a regularization term in optimization (e.g., Gaussian priors in MAP lead to L2 regularization in linear regression).
+    
+    \item \textbf{Optimization with Gradient Descent} – When no closed-form solution exists, MAP estimation is solved using iterative methods like gradient ascent or Expectation-Maximization (EM).
+
 \end{itemize}
 
-\subsection{Kernel Density Estimation (KDE)}
+\subsection{KDE}
 \begin{itemize}
+    \item Kernel Density estimation estimates the probability density function of random variable based on finite sample of data. 
+    \item Non-parametric
+
+    \item Intuition: Place kernel (e.g. Gaussian "bump") at each data point and sum the kernels to estimate the density
+    \[{\displaystyle {\widehat {f}}_{h}(x)={\frac {1}{n}}\sum _{i=1}^{n}K_{h}(x-x_{i})={\frac {1}{nh}}\sum _{i=1}^{n}K{\Big (}{\frac {x-x_{i}}{h}}{\Big )},}\]
+    \item For $n$ samples $x$; $h$ width of the "bump"; $K$ is symmetric, non negative function whose integral sums to 1
     \item Non-parametric method to estimate the probability density function of a random variable.
-    \item KDE formula:
-    \[ \hat{f}(x) = \frac{1}{nh} \sum_{i=1}^n K\left(\frac{x - x_i}{h}\right), \]
-    where $K$ is the kernel function, $h$ is the bandwidth, and $x_i$ are the data points.
+    \item \textbf{Kernel Function Smoothing} – Uses a kernel function (e.g., Gaussian, Epanechnikov) to smooth data points and create a continuous density estimate.
     \item Common kernels include Gaussian, Epanechnikov, and Uniform.
     \item Bandwidth $h$ controls the smoothness of the estimate.
 \end{itemize}
 
-\subsection{KL Divergence and ELBO}
+\subsection{KL Divergence}
 \begin{itemize}
     \item KL Divergence measures the difference between two distributions $P$ and $Q$:
     \[ D_{KL}(P \| Q) = \sum_x P(x) \log \frac{P(x)}{Q(x)}. \]
+\end{itemize}
+\subsection{ELBO}
+\begin{itemize}
     \item Evidence Lower Bound (ELBO):
     \[ \mathcal{L}(q) = \mathbb{E}_{q(z)}[\log P(x | z)] - D_{KL}(q(z) \| P(z)). \]
-    Used in variational inference to approximate posterior distributions.
-\end{itemize}
-\subsection{Expectation Maximization (EM)}
-\begin{itemize}
-    \item Useful for problems with latent unobserves variables (e.g. cluster assignments)
-    \item Iterative method to find the Maximum Likelihood Estimates (MLE) of parameters in probabilistic models with latent variables.
-    \item \textbf{E-Step:} Compute the expected value of the log-likelihood with respect to the conditional distribution of the latent variables:
-    \[ Q(\theta | \theta^{(t)}) = \mathbb{E}_{z \sim p(z|x, \theta^{(t)})}[\log p(x, z | \theta)]. \]
-    \item \textbf{M-Step:} Maximize $Q(\theta | \theta^{(t)})$ with respect to $\theta$ to update the parameters:
-    \[ \theta^{(t+1)} = \arg\max_{\theta} Q(\theta | \theta^{(t)}). \]
-\end{itemize}
+    Used in variational inference to approximate posterior distributions by maximizing a tractable lower bound on the log-marginal likelihood.
+    \item The ELBO is derived from Jensen’s inequality and is given by:  
 
+\[
+\log P(X) \geq \mathbb{E}_{q(Z|X)} \left[ \log P(X, Z) - \log q(Z|X) \right]
+\]
+
+Maximizing ELBO improves the approximation \( q(Z|X) \) of the true posterior \( P(Z|X) \), making it a central tool in variational inference and Bayesian deep learning.
+
+    \item It is called the Evidence Lower Bound (ELBO) because:
+
+\begin{itemize}
+    \item ``Evidence'' refers to the observed data likelihood $log P(X)$ (also called the marginal likelihood).
+    \item ``Lower Bound'' because ELBO provides a lower bound on $log P(X)$, meaning that optimizing ELBO indirectly maximizes the log-likelihood.
+\end{itemize}
+\subsection{Variational Inference}
+\begin{itemize}
+    \item Approximates posterior distributions by minimizing the KL divergence:
+    \[ q^*(z) = \arg\min_q D_{KL}(q(z) \| p(z|x)). \]
+    \item Optimizes Evidence Lower Bound (ELBO):
+    \[ \mathcal{L}(q) = \mathbb{E}_{q(z)}[\log P(x|z)] - D_{KL}(q(z) \| P(z)). \]
+\end{itemize}
+\end{itemize}
 \subsection{Markov Random Fields (MRFs) (Markov Networks)}
 \begin{itemize}
     \item Models the joint distribution of a set of random variables using an undirected graph.
@@ -209,22 +286,13 @@ ${\displaystyle q=1-p}$
     \item The sum of independent random variables leads to a normal distribution, regardless of the original distribution
     \item \[\sum_{i=1}^n \frac{X_i-n\mu}{\sqrt{n\sigma^2}}\]
 \end{itemize}
-\subsection{Law of Large Numbers}
-The average of the results obtained from a large number of independent random samples converges to the true value, if it exists.
 \subsection{Random Variables}
 Random variables quantify uncertainty in probabilistic models.
+\subsection{Law of Large Numbers}
+The average of the results obtained from a large number of independent random samples converges to the true value, if it exists.
+
 \subsection{IID}
 Each random variable has the same probability distribution as the others and all are mutually independent.
-
-\subsection{KDE}
-\begin{itemize}
-    \item Kernel Density estimation estimates the probability density function of random variable based on finite sample of data. 
-    \item Non-parametric
-
-    \item Intuition: Place kernel (e.g. Gaussian "bump") at each data point and sum the kernels to estimate the density
-    \[{\displaystyle {\widehat {f}}_{h}(x)={\frac {1}{n}}\sum _{i=1}^{n}K_{h}(x-x_{i})={\frac {1}{nh}}\sum _{i=1}^{n}K{\Big (}{\frac {x-x_{i}}{h}}{\Big )},}\]
-    \item For $n$ samples $x$; $h$ width of the "bump"; $K$ is symmetric, non negative function whose integral sums to 1
-\end{itemize}
 
 
 \subsection{Bayesian Information Criterion (BIC)}
@@ -249,14 +317,6 @@ Each random variable has the same probability distribution as the others and all
     \[ P(x_i | \text{Parents}(x_i)). \]
 \end{itemize}
 
-
-\subsection{Variational Inference}
-\begin{itemize}
-    \item Approximates posterior distributions by minimizing the KL divergence:
-    \[ q^*(z) = \arg\min_q D_{KL}(q(z) \| p(z|x)). \]
-    \item Optimizes Evidence Lower Bound (ELBO):
-    \[ \mathcal{L}(q) = \mathbb{E}_{q(z)}[\log P(x|z)] - D_{KL}(q(z) \| P(z)). \]
-\end{itemize}
 
 \subsection{Gibbs Sampling}
 \begin{itemize}
@@ -324,7 +384,28 @@ Each random variable has the same probability distribution as the others and all
     where $O$ is the observed frequency and $E$ is the expected frequency.
     \item Assumes expected frequencies are sufficiently large (e.g., $E \geq 5$).
 \end{itemize}
+\subsubsection{Wilcoxon Test }
+\begin{itemize}
+    \item \textbf{Non-Parametric Statistical Test} – The Wilcoxon test is a rank-based, non-parametric test used to compare paired or independent samples without assuming a normal distribution.
+    
+    \item \textbf{Two Main Variants} – The Wilcoxon signed-rank test compares paired (dependent) samples, while the Wilcoxon rank-sum test (also called the Mann-Whitney U test) compares two independent samples.
+    \item \textbf{Wilcoxon Signed-Rank Test Formula} – For paired samples \( X_1, X_2, \dots, X_n \), compute differences \( d_i = X_i - Y_i \), rank their absolute values \( R_i \), and sum the ranks for positive and negative differences:
+    \[
+    W = \sum_{i: d_i > 0} R_i.
+    \]
+    The test statistic \( W \) is compared against a critical value or approximated using a normal distribution for large samples.
 
+    \item \textbf{Wilcoxon Rank-Sum Test (Mann-Whitney U Test) Formula} – Given two independent samples of sizes \( n_1 \) and \( n_2 \), rank all observations together and compute:
+    \[
+    U = n_1 n_2 + \frac{n_1 (n_1 + 1)}{2} - R_1,
+    \]
+    where \( R_1 \) is the sum of ranks for the first sample. The test assesses whether the two groups come from the same distribution.
+
+    
+    \item \textbf{Ranks Instead of Raw Values} – Instead of comparing raw data values, the test ranks observations and assesses differences in distributions, making it robust to outliers and non-normal data.
+    
+    \item \textbf{Common in Small-Sample Analysis} – Frequently used in medical research, psychology, and other fields where sample sizes are small, and parametric assumptions (e.g., normality) may not hold.
+\end{itemize}
 \pagebreak
 \section{Linear Algebra in Machine Learning}
 \subsection{Orthogonality/-normality}
@@ -333,11 +414,11 @@ Each random variable has the same probability distribution as the others and all
 \item Orthogonal: $u \cdot v = 0$ for vectors $u,v$
 \item Orthonormal: Orthogonal and $||u||=||v||=1$
 \end{itemize}
-\subsection{Determinant:} Indicates if a matrix is invertible. A square matrix $A$ is singular if:
+\subsection{Determinant} Indicates if a matrix is invertible. A square matrix $A$ is singular if:
     \[ \det(A) = 0, \]
     e.g. \[{\displaystyle A =  {\begin{vmatrix}a&b\\c&d\end{vmatrix}}\rightarrow det(A)=ad-bc,}\]
-    which implies $A$ has no inverse and is rank-deficient.
-\subsection{Rank:} Measures the number of linearly independent rows or columns.
+    which implies $A$ has no inverse and is rank-deficient. A matrix is invertible if and only if its determinant is nonzero. The determinant of a transformation matrix represents scaling in geometry. For example, in 2D or 3D, $|det(A)|$ gives the factor by which areas or volumes are scaled under the transformation. The determinant of a matrix is the product of its eigenvalues.
+\subsection{Rank} Measures the number of linearly independent rows or columns.
     \begin{itemize}
         \item A rank-deficient matrix has redundant information.
         \item $\text{rank}(A) = \min(\text{rows}, \text{cols})$ for a full-rank matrix.
@@ -347,13 +428,13 @@ Each random variable has the same probability distribution as the others and all
         \item Solve $Av = \lambda v$ for scalar $\lambda$ (eigenvalue) and vector $v$ (eigenvector).
         \item Eigenvalues indicate the scaling in the direction of eigenvectors.
     \end{itemize}
-\subsection{Singular Values:} Derived from the singular value decomposition (SVD):
+\subsection{Singular Values} Derived from the singular value decomposition (SVD):
     \[ A = U\Sigma V^T, \]
     where $\Sigma$ contains the singular values, which measure the magnitude of each dimension.
-\subsection{Jacobian:} Matrix of first-order partial derivatives:
+\subsection{Jacobian} Matrix of first-order partial derivatives:
     \[ J_{ij} = \frac{\partial f_i}{\partial x_j}. \]
     Useful for analyzing transformations and gradients.
-\subsection{Hessian:} Matrix of second-order partial derivatives:
+\subsection{Hessian} Matrix of second-order partial derivatives:
     \[ H_{ij} = \frac{\partial^2 f}{\partial x_i \partial x_j}. \]
     Describes the curvature of a function, often used in optimization.
 
@@ -362,6 +443,7 @@ Each random variable has the same probability distribution as the others and all
     \item Approximates a function $f(x)$ near a point $a$:
     \[ f(x) \approx f(a) + f'(a)(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \dots \]
     \item Common in machine learning for approximating nonlinear functions locally.
+    \item Second-order expansion (using the Hessian) can help refine step directions for faster convergence
 \end{itemize}
 
 \subsection{Matrix Operations in ML}
@@ -911,7 +993,7 @@ Makes hard probabilities soft
 \end{itemize}
 \subsection{Gradient Checkpointing}
 Memory optimization technique which recomputes intermediate activations instead of storing them in memory (layer-wise).
-\subsubsection{Break Symmetry Problem}
+\subsection{Break Symmetry Problem}
 If two hidden units with same activation are connected to same inputs, they must have different parameters as otherwise they will be updated the same way.
 \subsection{Weight Initialization}
 \begin{itemize}
@@ -1159,7 +1241,49 @@ Randomly deactivates neurons during training.
     \item Speed up autoregressive  text generation 
     \item Use small model to speculate and large model to confirm 
     \item Uses log probability for evaluation 
-    
+\end{itemize}
+\subsection{LLM Evaluation Metrics}
+\begin{itemize}
+\item BLEU
+\begin{itemize}
+    \item Computes precision-based n-gram similarity between candidate and reference text.
+    \[
+    \text{BLEU} = \text{BP} \cdot \exp \left( \sum_{n=1}^{N} w_n \log p_n \right)
+    \]
+    where \( p_n \) is the precision for n-grams, \( w_n \) is the weight, and BP is the brevity penalty.
+    \item The brevity penalty (BP) is given by:
+    \[
+    \text{BP} =
+    \begin{cases}
+        1, & \text{if } c > r \\
+        e^{(1 - \frac{r}{c})}, & \text{if } c \leq r
+    \end{cases}
+    \]
+    where \( c \) is the length of the candidate text and \( r \) is the length of the reference text.
+
+\end{itemize}
+\item ROUGE
+\begin{itemize}
+    \item \textbf{ROUGE-N:} Measures the overlap of n-grams between the candidate text and reference text.
+    \[
+    \text{ROUGE-N} = \frac{\sum_{\text{gram}_n \in \text{Ref}} \text{Count}_{\text{match}}(\text{gram}_n)}{\sum_{\text{gram}_n \in \text{Ref}} \text{Count}(\text{gram}_n)}
+    \]
+    \item \textbf{ROUGE-L:} Considers the longest common subsequence (LCS) to capture sentence-level structure.
+    \[
+    \text{ROUGE-L} = \frac{\text{LCS}(\text{Candidate}, \text{Reference})}{\text{Length}(\text{Reference})}
+    \]
+\end{itemize}
+\subsection{Model Quantization}
+\begin{itemize}
+    \item \textbf{Definition:} Quantization is the process of mapping continuous values to a finite set of discrete values, often used in signal processing and neural network optimization.
+    \item \textbf{Uniform Quantization:} Divides the range of values into equal-sized intervals, with each value mapped to the nearest representative level.
+    \[
+    Q(x) = \Delta \cdot \left\lfloor \frac{x}{\Delta} + 0.5 \right\rfloor
+    \]
+    where \( \Delta \) is the quantization step size.
+    \item \textbf{Non-Uniform Quantization:} Uses variable-sized intervals, typically based on a logarithmic or learned distribution, to allocate more precision to frequently occurring values.
+    \item \textbf{Application in Deep Learning:} Reduces model size and inference latency by representing weights and activations with lower bit-widths (e.g., 8-bit integers instead of 32-bit floats).
+\end{itemize}
 \end{itemize}
 \subsection{Vision Transformers (ViTs)}
 \begin{itemize}
@@ -1698,7 +1822,7 @@ Stochastic process where next state depends on current state. Uses \textbf{state
         \item These algorithms are widely used in reinforcement learning tasks.
     \end{itemize}
 \end{enumerate}
-\subsection{SARSA:} On-policy algorithm that updates Q-values based on the current policy:
+\subsection{SARSA} On-policy algorithm that updates Q-values based on the current policy:
     \[ Q(s, a) \leftarrow Q(s, a) + \alpha \left[ r + \gamma Q(s', a') - Q(s, a) \right]. \]
 \subsection{Reinforce}%TODO add details 
 \begin{enumerate}
@@ -1743,7 +1867,7 @@ Since \( G_t - b(s) \) centers the updates around zero, it reduces variance with
         \item It is widely used in reinforcement learning tasks with discrete action spaces.
     \end{itemize}
 \end{enumerate}
-\subsection{Q-Learning:} Off-policy algorithm that learns the optimal policy by maximizing future rewards. The Q-value is updated using the Bellman equation:
+\subsection{Q-Learning} Off-policy algorithm that learns the optimal policy by maximizing future rewards. The Q-value is updated using the Bellman equation:
         \[
         Q(s, a) \gets Q(s, a) + \alpha \big[ R + \gamma \max_a Q(s', a) - Q(s, a) \big],
         \]
